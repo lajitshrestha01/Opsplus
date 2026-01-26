@@ -39,3 +39,29 @@ def start_job(db: Session, job_id: int):
     db.refresh(job)
     append_event(db, job.id, "job.started")
     return job
+
+def succeed_job(db: Session, job_id: int): 
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if job is None: 
+        raise NotFoundError()
+    if job.status != "running": 
+        raise InvalidStateError()
+    job.status = "succeeded"
+    db.commit()
+    db.refresh(job)
+    append_event(db, job.id, "job.succeeded")
+    return job 
+
+def fail_job(db: Session, job_id: int ): 
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if job is None: 
+        raise NotFoundError()
+    if job.status != "running": 
+        raise InvalidStateError()
+    job.status = "failed"
+    db.commit()
+    db.refresh(job)
+    append_event(db, job.id, "job.failed")
+    return job
+    
+
