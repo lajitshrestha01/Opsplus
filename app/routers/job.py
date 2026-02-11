@@ -21,7 +21,7 @@ def get_job_endpoint(job_id: int = Path(..., gt=0), db: Session = Depends(get_db
     job = get_job(db, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="job not found")
-    return job
+    return JobRead.model_validate(job)
 
 
 @router.post("/{job_id}/start", response_model=JobRead)
@@ -32,7 +32,7 @@ def start_job_endpoint(job_id: int, db: Session = Depends(get_db)):
     except NotFoundError:
         raise HTTPException(404)
     except InvalidStateError:
-        raise HTTPException(409)
+        raise HTTPException(409, detail="job is not in queued state")
     
 @router.get("/{job_id}/events", response_model=list[JobEventOut])
 def list_job_event_endpoint(job_id: int, db: Session = Depends(get_db)):

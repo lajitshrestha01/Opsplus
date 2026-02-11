@@ -19,8 +19,7 @@ def append_event(db: Session, job_id: int, event_type: str, payload=None):
     )
 
     db.add(job_event)
-    db.commit()
-    db.refresh(job_event)
+    db.flush()
     return job_event
 
 

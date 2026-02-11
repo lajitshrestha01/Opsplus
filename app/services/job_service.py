@@ -17,9 +17,10 @@ def create_job(db: Session, job_in: JobCreate):
     )
 
     db.add(job)
+    db.flush()
+    append_event(db, job.id, "job.created", payload={"actor":"api"})
     db.commit()
     db.refresh(job)
-    append_event(db, job.id, "job.created")
     return job
 
 
@@ -35,9 +36,11 @@ def start_job(db: Session, job_id: int):
         raise InvalidStateError()
     job.status = 'running'
 
+    db.flush()
+    append_event(db, job.id, "job.started",payload={"actor":"api"})
     db.commit()
     db.refresh(job)
-    append_event(db, job.id, "job.started")
+
     return job
 
 def succeed_job(db: Session, job_id: int): 
@@ -47,9 +50,10 @@ def succeed_job(db: Session, job_id: int):
     if job.status != "running": 
         raise InvalidStateError()
     job.status = "succeeded"
+    db.flush()
+    append_event(db, job.id, "job.succeeded",payload={"actor":"api"})
     db.commit()
     db.refresh(job)
-    append_event(db, job.id, "job.succeeded")
     return job 
 
 def fail_job(db: Session, job_id: int ): 
@@ -59,9 +63,10 @@ def fail_job(db: Session, job_id: int ):
     if job.status != "running": 
         raise InvalidStateError()
     job.status = "failed"
+    db.flush()
+    append_event(db, job.id, "job.failed",payload={"actor":"api"})
     db.commit()
     db.refresh(job)
-    append_event(db, job.id, "job.failed")
     return job
     
 
